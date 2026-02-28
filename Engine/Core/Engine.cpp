@@ -40,4 +40,16 @@ namespace TriKit {
     void Engine::WaitForPreviousFrame() {
     }
 
+    ID3D12Device* Engine::GetDevice() const {
+        return device.Get();
+    }
+
+    IDXGIFactory4* Engine::GetFactory() const {
+        return factory.Get();
+    }
+
+    IDXGISwapChain* Engine::GetSwapChain() const {
+        return swapChain.Get();
+    }
+
 }

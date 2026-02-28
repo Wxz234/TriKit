@@ -15,4 +15,6 @@ add_executable(BasicExample WIN32
 
 target_link_libraries(BasicExample PRIVATE
     TriKitCore
+    d3d12.lib
+    dxgi.lib
 )
