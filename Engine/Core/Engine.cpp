@@ -52,4 +52,16 @@ namespace TriKit {
         return swapChain.Get();
     }
 
+    HWND Engine::GetWindowHandle() const {
+        return hWnd;
+    }
+
+    int Engine::GetWidth() const {
+        return width;
+    }
+
+    int Engine::GetHeight() const {
+        return height;
+    }
+
 }

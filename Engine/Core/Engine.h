@@ -10,9 +10,17 @@ namespace TriKit {
     private:
         static Engine* instance;
 
+        // DirectX members
         Microsoft::WRL::ComPtr<ID3D12Device> device;
         Microsoft::WRL::ComPtr<IDXGIFactory4> factory;
         Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain;
+
+        // Window members
+        HWND hWnd;
+        HINSTANCE hInstance;
+        int width;
+        int height;
+        const wchar_t* title;
 
         Engine();
         ~Engine();
@@ -29,5 +37,8 @@ namespace TriKit {
         ID3D12Device* GetDevice() const;
         IDXGIFactory4* GetFactory() const;
         IDXGISwapChain* GetSwapChain() const;
+        HWND GetWindowHandle() const;
+        int GetWidth() const;
+        int GetHeight() const;
     };
 }
