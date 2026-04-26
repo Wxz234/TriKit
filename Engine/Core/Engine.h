@@ -6,10 +6,20 @@
 #include <wrl/client.h>
 #include <vector>
 #include <string>
+#include <functional>
+#include "GameState.h"
 
 namespace TriKit {
     class Engine {
     private:
+        using UpdateCallback = std::function<void(GameState&, float)>;
+
+        struct CallbackEntry {
+            UINT64 id;
+            UpdateCallback fn;
+            bool alive;
+        };
+
         // DirectX members
         Microsoft::WRL::ComPtr<ID3D12Device> device;
         Microsoft::WRL::ComPtr<IDXGIFactory4> factory;
@@ -39,15 +49,24 @@ namespace TriKit {
         UINT64 copyFenceValue = 0;
         UINT64 computeFenceValue = 0;
 
+        bool isInitialize = false;
+
+        UINT64 callbackCount = 0;
+        std::vector<CallbackEntry> updateCallbacks;
+
+        LARGE_INTEGER frequency;
+        LARGE_INTEGER lastTime;
+
         void Shutdown();
         void Present();
         void MoveToNextFrame();
+
+        float CalculateDeltaTime();
 
         ID3D12CommandQueue* GetGraphicsQueue() const;
         ID3D12CommandQueue* GetCopyQueue() const;
         ID3D12CommandQueue* GetComputeQueue() const;
 
-    public:
         Engine();
         ~Engine();
 
@@ -55,6 +74,22 @@ namespace TriKit {
         Engine& operator=(const Engine&) = delete;
         Engine(Engine&&) noexcept = delete;
         Engine& operator=(Engine&&) noexcept = delete;
+
+    public:
+        static Engine& GetInstance() {
+            static Engine instance;
+            return instance;
+        }
+
+        UINT64 AddUpdateCallback(UpdateCallback fn) {
+            UINT64 id = callbackCount++;
+            updateCallbacks.push_back({ id, fn, true });
+            return id;
+        }
+
+        void RemoveUpdateCallback(UINT64 id) {
+            updateCallbacks[id].alive = false;
+        }
 
         bool Initialize(HINSTANCE hInstance, int width, int height, const wchar_t* title);
         int Run();

@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "Engine.h"
 
 #define FRAME_BUFFER_COUNT 3
@@ -5,10 +6,18 @@
 namespace TriKit {
 
     LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) { 
-        if (msg == WM_DESTROY) { 
-            PostQuitMessage(0); return 0; 
-        } 
-        return DefWindowProcW(hwnd, msg, wParam, lParam); 
+        switch (msg) {
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+            break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+        default:
+            return DefWindowProcW(hwnd, msg, wParam, lParam);
+        }
+
+        return 0;
     }
 
     Engine::Engine() {
@@ -16,18 +25,27 @@ namespace TriKit {
         this->hWnd = nullptr;
         this->width = 0;
         this->height = 0;
+
+        QueryPerformanceFrequency(&frequency);
+        QueryPerformanceCounter(&lastTime);
     }
 
     Engine::~Engine() {
-        Shutdown();
+        if (isInitialize) {
+            Shutdown();
+        }
     }
 
     bool Engine::Initialize(HINSTANCE hInstance, int width, int height, const wchar_t* title) {
-
         this->hInstance = hInstance;
         this->width = width;
         this->height = height;
         this->title = title;
+
+        isInitialize = true;
+
+        const std::wstring trikitWindow = L"TriKit.Window.";
+        std::wstring realWindowName = trikitWindow + title;
 
         WNDCLASSEXW wcex{};
         wcex.cbSize = sizeof(WNDCLASSEXW);
@@ -37,7 +55,7 @@ namespace TriKit {
         wcex.hIcon = LoadIconW(this->hInstance, L"IDI_ICON");
         wcex.hCursor = LoadCursorW(nullptr, MAKEINTRESOURCEW(32512));
         wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
-        wcex.lpszClassName = L"TriKit.Window";
+        wcex.lpszClassName = realWindowName.c_str();
         wcex.hIconSm = LoadIconW(this->hInstance, L"IDI_ICON");
         
         if (!RegisterClassExW(&wcex)) {
@@ -47,7 +65,7 @@ namespace TriKit {
         auto stype = WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX;
         RECT rc = { 0, 0, static_cast<LONG>(this->width), static_cast<LONG>(this->height) };
         AdjustWindowRect(&rc, stype, FALSE);
-        hWnd = CreateWindowExW(0, L"TriKit.Window", this->title.c_str(), stype, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, this->hInstance, nullptr);
+        hWnd = CreateWindowExW(0, realWindowName.c_str(), this->title.c_str(), stype, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, this->hInstance, nullptr);
         
         if (!hWnd) {
             return false;
@@ -145,14 +163,39 @@ namespace TriKit {
         return true;
     }
 
+    float Engine::CalculateDeltaTime() {
+        LARGE_INTEGER currentTime;
+        QueryPerformanceCounter(&currentTime);
+
+        float deltaTime = float(currentTime.QuadPart - lastTime.QuadPart)
+            / float(frequency.QuadPart);
+
+        lastTime = currentTime;
+        return deltaTime;
+    }
+
     int Engine::Run() {
+        if (!isInitialize) {
+            throw std::runtime_error("Engine not initialized.");
+        }
+
+        QueryPerformanceCounter(&lastTime);
+
         MSG msg = {};
+        GameState gameState;
         while (msg.message != WM_QUIT) {
             if (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg); 
                 DispatchMessageW(&msg); 
             } else {
-                
+                float deltaTime = CalculateDeltaTime();
+
+                for (auto& cb : updateCallbacks) {
+                    if (cb.alive) {
+                        cb.fn(gameState, deltaTime);
+                    }
+                }
+
                 Present();
                 MoveToNextFrame();
             }
