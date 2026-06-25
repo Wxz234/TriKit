@@ -2,29 +2,9 @@
 
 TriKit is a self-developed 3D-focused game engine based on DirectX 12, providing efficient graphics rendering, input handling, resource management, and scene management capabilities.
 
-## Directory Structure
-
-```
-TriKit/
-├── Engine/
-│   ├── Core/          # Core engine code
-│   ├── Rendering/     # Rendering system
-│   ├── Input/         # Input system
-│   ├── Resources/     # Resource management
-│   └── Scene/         # Scene management
-├── Examples/          # Example applications
-├── CMakeLists.txt     # CMake build configuration
-├── README.md          # English documentation
-└── README_zh.md       # Chinese documentation
-```
-
 ## Core Features
 
 - **DirectX 12 Rendering**: Utilizes the latest DirectX 12 features to provide efficient 3D rendering capabilities
-- **Window Management**: Creates and manages game windows, handles Windows messages
-- **Input System**: Supports keyboard and mouse input
-- **Resource Management**: Loads and manages textures, models, shaders, and other resources
-- **Scene Management**: Manages game scenes and objects
 
 ## Build Instructions
 
