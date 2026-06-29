@@ -1,26 +1,14 @@
 #pragma once
 
-#include <string>
+#include "Core/Event.h"
 
 namespace TriKit {
-    struct WindowDesc {
-        void* instance = nullptr;
-        int         width = 1280;
-        int         height = 720;
-        std::wstring title = L"Engine";
-    };
-
     class Window {
     public:
-        bool Initialize(const WindowDesc& desc);
-        void PollEvents();
-        bool ShouldClose() const;
-        void Shutdown();
+        virtual bool Initialize(void* instance, int width, int height, const wchar_t* title) noexcept = 0;
+        virtual bool PollEvents(Event& event) = 0;
+        virtual void Shutdown() = 0;
+        virtual void* GetNativeHandle() const = 0;
     private:
-        void* hInstance = nullptr;
-        void* hWnd = nullptr;
-        int width = 0;
-        int height = 0;
-        std::wstring title;
     };
 }

@@ -1,6 +1,7 @@
 file(GLOB ALL_SOURCES CONFIGURE_DEPENDS 
     "Core/*.cpp" "Core/*.h"
     "Platform/*.cpp" "Platform/*.h"
+    "Renderer/*.cpp" "Renderer/*.h"
 )
 
 add_library(TriKitCore STATIC
